@@ -10,11 +10,11 @@
 
   let tasks = [];
   let idCounter = 0;
-  let activeTimers = {}; // taskId -> { interval, startedAt }
   let currentView = 'hybrid';
   let filterPriority = 'all';
   let filterCategory = 'all';
   let _saveTimer = null;
+  let weekOffset = 0; // 0 = current week, -1 = last week, +1 = next week
 
   async function loadData() {
     try {
@@ -27,12 +27,6 @@
       tasks = [];
       idCounter = 0;
     }
-    // Restore running timers
-    tasks.forEach(t => {
-      if (t.timerRunning && t.timerStartedAt) {
-        startTimerInterval(t.id, t.timerStartedAt);
-      }
-    });
   }
 
   function saveData() {
@@ -64,9 +58,6 @@
       time: data.time || '09:00',
       notes: data.notes || '',
       createdAt: Date.now(),
-      timerElapsed: 0,
-      timerRunning: false,
-      timerStartedAt: null,
       recurrence: data.recurrence || null,
       scheduledDate: data.scheduledDate || null,
       recurrenceGroupId: data.recurrenceGroupId || null,
@@ -231,69 +222,6 @@
     });
   }
 
-  // ---- TIMER ----
-  function startTimerInterval(id, startedAt) {
-    if (activeTimers[id]) return;
-    activeTimers[id] = {
-      startedAt: startedAt,
-      interval: setInterval(() => updateTimerDisplay(id), 1000)
-    };
-  }
-
-  function stopTimerInterval(id) {
-    if (activeTimers[id]) {
-      clearInterval(activeTimers[id].interval);
-      delete activeTimers[id];
-    }
-  }
-
-  function toggleTimer(id) {
-    const task = tasks.find(t => t.id === id);
-    if (!task) return;
-
-    if (task.timerRunning) {
-      // Stop
-      const now = Date.now();
-      task.timerElapsed += Math.floor((now - task.timerStartedAt) / 1000);
-      task.timerRunning = false;
-      task.timerStartedAt = null;
-      stopTimerInterval(id);
-    } else {
-      // Start
-      task.timerRunning = true;
-      task.timerStartedAt = Date.now();
-      startTimerInterval(id, task.timerStartedAt);
-    }
-    saveData();
-    render();
-  }
-
-  function getElapsedSeconds(task) {
-    let total = task.timerElapsed || 0;
-    if (task.timerRunning && task.timerStartedAt) {
-      total += Math.floor((Date.now() - task.timerStartedAt) / 1000);
-    }
-    return total;
-  }
-
-  function formatTimer(seconds) {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) {
-      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    }
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  }
-
-  function updateTimerDisplay(id) {
-    const el = document.querySelector(`.strip-elapsed[data-id="${id}"]`);
-    const task = tasks.find(t => t.id === id);
-    if (el && task) {
-      el.textContent = formatTimer(getElapsedSeconds(task));
-    }
-  }
-
   // ---- CLOCK ----
   function updateClock() {
     const now = new Date();
@@ -357,7 +285,6 @@
     card.dataset.id = task.id;
     card.draggable = true;
 
-    const elapsed = getElapsedSeconds(task);
     const isCleared = task.status === 'cleared';
 
     const hasRecurrence = !!task.recurrence;
@@ -366,25 +293,17 @@
     card.innerHTML = `
       <div class="strip-top">
         <span class="strip-id">${task.id}</span>
-        ${hasRecurrence ? '<span class="strip-recurrence" title="繰り返しタスク">↻</span>' : ''}
         <span class="strip-time">${task.time}</span>
         ${dateLabel ? `<span class="strip-date">${dateLabel}</span>` : ''}
         <span class="strip-priority ${task.priority}">${task.priority}</span>
       </div>
-      <div class="strip-title">${escapeHtml(task.title)}</div>
+      <div class="strip-title">${hasRecurrence ? '<span class="strip-recurrence" title="繰り返しタスク">↻</span>' : ''}${escapeHtml(task.title)}</div>
       <div class="strip-bottom">
         <span class="strip-category">${escapeHtml(task.category)}</span>
         <button class="strip-done ${isCleared ? '' : 'not-done'}" data-id="${task.id}" title="${isCleared ? '未完了に戻す' : '完了にする'}">
           ${isCleared ? '✓' : '○'}
         </button>
       </div>
-      ${task.status !== 'cleared' ? `
-      <div class="strip-timer-row">
-        <button class="strip-start-btn ${task.timerRunning ? 'running' : ''}" data-id="${task.id}">
-          ${task.timerRunning ? '⏸ STOP' : '▶ START'}
-        </button>
-        <span class="strip-elapsed" data-id="${task.id}">${formatTimer(elapsed)}</span>
-      </div>` : ''}
     `;
 
     // Drag
@@ -399,7 +318,7 @@
 
     // Click to edit
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.strip-done') || e.target.closest('.strip-start-btn')) return;
+      if (e.target.closest('.strip-done')) return;
       openEditModal(task.id);
     });
 
@@ -409,21 +328,11 @@
       if (task.status === 'cleared') {
         updateTask(task.id, { status: 'active' });
       } else {
-        if (task.timerRunning) toggleTimer(task.id);
         updateTask(task.id, { status: 'cleared' });
         spawnNextRecurrence(task);
       }
       render();
     });
-
-    // Timer
-    const timerBtn = card.querySelector('.strip-start-btn');
-    if (timerBtn) {
-      timerBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleTimer(task.id);
-      });
-    }
 
     return card;
   }
@@ -456,12 +365,12 @@
   const DAY_NAMES_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
   function getWeekRange() {
-    // Get Monday-Sunday of the current week
+    // Get Monday-Sunday of the week offset by weekOffset
     const now = new Date();
     const dayOfWeek = now.getDay(); // 0=Sun
     const diffToMon = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
     const monday = new Date(now);
-    monday.setDate(now.getDate() + diffToMon);
+    monday.setDate(now.getDate() + diffToMon + weekOffset * 7);
     monday.setHours(0, 0, 0, 0);
 
     const days = [];
@@ -478,9 +387,31 @@
     return todayISO();
   }
 
+  function renderWeekNav() {
+    const container = document.getElementById('timeline-container');
+    let nav = document.getElementById('week-nav');
+    if (!nav) {
+      nav = document.createElement('div');
+      nav.id = 'week-nav';
+      container.insertBefore(nav, container.firstChild);
+    }
+
+    nav.innerHTML = `
+      <button class="week-nav-btn" id="week-prev">◁ PREV</button>
+      <button class="week-nav-btn week-nav-today${weekOffset === 0 ? ' current' : ''}" id="week-today">● TODAY</button>
+      <button class="week-nav-btn" id="week-next">NEXT ▷</button>
+    `;
+
+    document.getElementById('week-prev').addEventListener('click', () => { weekOffset--; render(); });
+    document.getElementById('week-next').addEventListener('click', () => { weekOffset++; render(); });
+    document.getElementById('week-today').addEventListener('click', () => { if (weekOffset !== 0) { weekOffset = 0; render(); } });
+  }
+
   function renderTimeline() {
     const grid = document.getElementById('timeline-week-grid');
     grid.innerHTML = '';
+
+    renderWeekNav();
 
     const weekDays = getWeekRange();
     const todayStr = todayISO();
@@ -533,10 +464,9 @@
           const hasRec = !!task.recurrence;
           item.innerHTML = `
             <div class="week-task-time">${task.time || ''}</div>
-            <div class="week-task-title">${escapeHtml(task.title)}</div>
+            <div class="week-task-title">${hasRec ? '<span class="week-task-recurrence">↻</span>' : ''}${escapeHtml(task.title)}</div>
             <div class="week-task-meta">
               ${task.category ? `<span class="week-task-cat">${escapeHtml(task.category)}</span>` : ''}
-              ${hasRec ? '<span class="week-task-recurrence">↻</span>' : ''}
               <span class="week-task-pri ${task.priority}">${task.priority}</span>
             </div>
           `;
@@ -571,9 +501,6 @@
         const newStatus = col.dataset.status;
         const task = tasks.find(t => t.id === taskId);
         if (task && task.status !== newStatus) {
-          if (newStatus === 'cleared' && task.timerRunning) {
-            toggleTimer(task.id);
-          }
           updateTask(taskId, { status: newStatus });
           if (newStatus === 'cleared') {
             spawnNextRecurrence(task);
@@ -633,6 +560,15 @@
     return null;
   }
 
+  function openPanel() {
+    const modal = document.getElementById('task-modal');
+    modal.classList.remove('hidden');
+    // Force reflow so the transition triggers
+    modal.offsetHeight;
+    modal.classList.add('open');
+    setTimeout(() => document.getElementById('task-title').focus(), 50);
+  }
+
   function openCreateModal() {
     document.getElementById('task-id').value = '';
     document.getElementById('task-title').value = '';
@@ -645,8 +581,7 @@
     resetRecurrenceForm();
     document.getElementById('task-delete-btn').classList.add('hidden');
     document.querySelector('.modal-title').textContent = 'NEW TASK';
-    document.getElementById('task-modal').classList.remove('hidden');
-    document.getElementById('task-title').focus();
+    openPanel();
   }
 
   function openEditModal(id) {
@@ -663,12 +598,13 @@
     populateRecurrenceForm(task.recurrence);
     document.getElementById('task-delete-btn').classList.remove('hidden');
     document.querySelector('.modal-title').textContent = 'EDIT — ' + task.id;
-    document.getElementById('task-modal').classList.remove('hidden');
-    document.getElementById('task-title').focus();
+    openPanel();
   }
 
   function closeModal() {
-    document.getElementById('task-modal').classList.add('hidden');
+    const modal = document.getElementById('task-modal');
+    modal.classList.remove('open');
+    setTimeout(() => modal.classList.add('hidden'), 300);
   }
 
   // ---- VIEW TOGGLE ----
@@ -730,11 +666,9 @@
     // Add task button
     document.getElementById('btn-add-task').addEventListener('click', openCreateModal);
 
-    // Modal close
+    // Panel close
     document.getElementById('modal-close').addEventListener('click', closeModal);
-    document.getElementById('task-modal').addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) closeModal();
-    });
+    document.getElementById('panel-overlay').addEventListener('click', closeModal);
 
     // Escape key
     document.addEventListener('keydown', (e) => {
