@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasktics</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header id="app-header">
+    <div class="header-top">
+      <div class="app-title">
+        <span class="diamond">◆</span> TASKTICS
+      </div>
+      <div class="header-version">ATC-SYS v1.0.0</div>
+    </div>
+    <div class="header-stats">
+      <span class="stat">ACT:<span id="stat-act">0</span></span>
+      <span class="stat">NXT:<span id="stat-nxt">0</span></span>
+      <span class="stat">HLD:<span id="stat-hld">0</span></span>
+      <span class="stat">CLR:<span id="stat-clr">0</span></span>
+      <span class="stat stat-urg">URG:<span id="stat-urg">0</span></span>
+      <div id="clock" class="clock"></div>
+    </div>
+    <div class="header-controls">
+      <div class="view-tabs">
+        <button class="tab-btn active" data-view="hybrid">HYBRID</button>
+        <button class="tab-btn" data-view="kanban">KANBAN</button>
+        <button class="tab-btn" data-view="timeline">TIMELINE</button>
+      </div>
+      <div class="filter-btns">
+        <select id="filter-priority" class="ctrl-btn">
+          <option value="all">ALL PRI</option>
+          <option value="URG">URG</option>
+          <option value="HI">HI</option>
+          <option value="NRM">NRM</option>
+          <option value="LO">LO</option>
+        </select>
+        <select id="filter-category" class="ctrl-btn">
+          <option value="all">ALL CAT</option>
+        </select>
+        <button id="btn-add-task" class="ctrl-btn accent">+ TASK</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Timeline (Weekly) -->
+  <section id="timeline-section">
+    <div class="section-label">◆ WEEKLY TIMELINE</div>
+    <div id="timeline-container">
+      <div id="timeline-week-grid"></div>
+    </div>
+  </section>
+
+  <!-- Kanban Board -->
+  <section id="kanban-section">
+    <div class="kanban-board">
+      <!-- ACTIVE -->
+      <div class="kanban-column" data-status="active">
+        <div class="column-header">
+          <span class="col-icon">▶</span>
+          <span class="col-title">ACTIVE</span>
+          <span class="col-sub">進行中</span>
+          <span class="col-count" id="col-count-active">0</span>
+        </div>
+        <div class="column-body" data-status="active"></div>
+      </div>
+      <!-- NEXT ACTION -->
+      <div class="kanban-column" data-status="next">
+        <div class="column-header">
+          <span class="col-icon">→</span>
+          <span class="col-title">NEXT ACTION</span>
+          <span class="col-sub">次のアクション</span>
+          <span class="col-count" id="col-count-next">0</span>
+        </div>
+        <div class="column-body" data-status="next"></div>
+      </div>
+      <!-- HOLDING -->
+      <div class="kanban-column" data-status="holding">
+        <div class="column-header">
+          <span class="col-icon">⏸</span>
+          <span class="col-title">HOLDING</span>
+          <span class="col-sub">待機中</span>
+          <span class="col-count" id="col-count-holding">0</span>
+        </div>
+        <div class="column-body" data-status="holding"></div>
+      </div>
+      <!-- CLEARED -->
+      <div class="kanban-column" data-status="cleared">
+        <div class="column-header">
+          <span class="col-icon">✓</span>
+          <span class="col-title">CLEARED</span>
+          <span class="col-sub">完了</span>
+          <span class="col-count" id="col-count-cleared">0</span>
+        </div>
+        <div class="column-body" data-status="cleared"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Task Modal -->
+  <div id="task-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">NEW TASK</span>
+        <button id="modal-close" class="modal-close-btn">✕</button>
+      </div>
+      <form id="task-form">
+        <input type="hidden" id="task-id">
+        <div class="form-row">
+          <label>TITLE</label>
+          <input type="text" id="task-title" required placeholder="タスク名を入力">
+        </div>
+        <div class="form-row">
+          <label>CATEGORY</label>
+          <input type="text" id="task-category" placeholder="仕事, 個人, etc." list="category-list">
+          <datalist id="category-list"></datalist>
+        </div>
+        <div class="form-row">
+          <label>PRIORITY</label>
+          <select id="task-priority">
+            <option value="NRM">NRM - Normal</option>
+            <option value="URG">URG - Urgent</option>
+            <option value="HI">HI - High</option>
+            <option value="LO">LO - Low</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>STATUS</label>
+          <select id="task-status">
+            <option value="active">ACTIVE</option>
+            <option value="next">NEXT ACTION</option>
+            <option value="holding">HOLDING</option>
+            <option value="cleared">CLEARED</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>SCHEDULED</label>
+          <div class="form-inline">
+            <input type="date" id="task-date">
+            <input type="time" id="task-time" value="09:00">
+          </div>
+        </div>
+        <div class="form-row">
+          <label>RECURRENCE</label>
+          <select id="task-recurrence-type">
+            <option value="none">なし (None)</option>
+            <option value="weekly">毎週 (Weekly)</option>
+            <option value="monthly">毎月 (Monthly)</option>
+          </select>
+        </div>
+        <div class="form-row hidden" id="recurrence-weekly-options">
+          <label>DAY OF WEEK</label>
+          <select id="task-recurrence-dow">
+            <option value="1">月曜日 (Mon)</option>
+            <option value="2">火曜日 (Tue)</option>
+            <option value="3">水曜日 (Wed)</option>
+            <option value="4">木曜日 (Thu)</option>
+            <option value="5">金曜日 (Fri)</option>
+            <option value="6">土曜日 (Sat)</option>
+            <option value="0">日曜日 (Sun)</option>
+          </select>
+        </div>
+        <div class="form-row hidden" id="recurrence-monthly-options">
+          <label>DAY OF MONTH</label>
+          <select id="task-recurrence-dom">
+            <option value="-1">月末 (End of Month)</option>
+            <option value="1">1日</option>
+            <option value="2">2日</option>
+            <option value="3">3日</option>
+            <option value="4">4日</option>
+            <option value="5">5日</option>
+            <option value="6">6日</option>
+            <option value="7">7日</option>
+            <option value="8">8日</option>
+            <option value="9">9日</option>
+            <option value="10">10日</option>
+            <option value="11">11日</option>
+            <option value="12">12日</option>
+            <option value="13">13日</option>
+            <option value="14">14日</option>
+            <option value="15">15日</option>
+            <option value="16">16日</option>
+            <option value="17">17日</option>
+            <option value="18">18日</option>
+            <option value="19">19日</option>
+            <option value="20">20日</option>
+            <option value="21">21日</option>
+            <option value="22">22日</option>
+            <option value="23">23日</option>
+            <option value="24">24日</option>
+            <option value="25">25日</option>
+            <option value="26">26日</option>
+            <option value="27">27日</option>
+            <option value="28">28日</option>
+            <option value="29">29日</option>
+            <option value="30">30日</option>
+            <option value="31">31日</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>NOTES</label>
+          <textarea id="task-notes" rows="2" placeholder="メモ"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" id="task-delete-btn" class="btn-danger hidden">DELETE</button>
+          <button type="submit" class="btn-primary">SAVE</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

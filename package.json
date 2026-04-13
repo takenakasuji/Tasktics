@@ -1,0 +1,12 @@
+{
+  "name": "tasktics",
+  "version": "1.0.0",
+  "description": "ATC-themed task management tool",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
