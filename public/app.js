@@ -326,7 +326,7 @@
     card.querySelector('.strip-done').addEventListener('click', (e) => {
       e.stopPropagation();
       if (task.status === 'cleared') {
-        updateTask(task.id, { status: 'active' });
+        updateTask(task.id, { status: 'active', clearedAt: null });
       } else {
         updateTask(task.id, { status: 'cleared' });
         spawnNextRecurrence(task);
@@ -350,19 +350,48 @@
     ['active', 'next', 'holding', 'cleared'].forEach(status => {
       const col = document.querySelector(`.column-body[data-status="${status}"]`);
       col.innerHTML = '';
-      const items = filtered
+      let items = filtered
         .filter(t => t.status === status)
         .sort((a, b) => {
+          if (status === 'cleared') {
+            return (b.clearedAt || b.createdAt) - (a.clearedAt || a.createdAt);
+          }
           const priOrder = { URG: 0, HI: 1, NRM: 2, LO: 3 };
           return (priOrder[a.priority] ?? 2) - (priOrder[b.priority] ?? 2) || a.createdAt - b.createdAt;
         });
+
+      const totalCount = items.length;
+
+      if (status === 'cleared' && !clearedExpanded && totalCount > CLEARED_PREVIEW_COUNT) {
+        items = items.slice(0, CLEARED_PREVIEW_COUNT);
+      }
+
       items.forEach(t => col.appendChild(createStripCard(t)));
+
+      if (status === 'cleared' && totalCount > CLEARED_PREVIEW_COUNT) {
+        const toggle = document.createElement('div');
+        toggle.className = 'cleared-toggle-bar';
+        if (clearedExpanded) {
+          toggle.innerHTML = '<span class="toggle-icon">▲</span> COLLAPSE';
+        } else {
+          toggle.innerHTML = `<span class="toggle-icon">▼</span> SHOW ALL <span class="toggle-count">${totalCount}</span>`;
+        }
+        toggle.addEventListener('click', () => {
+          clearedExpanded = !clearedExpanded;
+          render();
+        });
+        col.appendChild(toggle);
+      }
     });
   }
 
   // ---- RENDER TIMELINE (WEEKLY) ----
   const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
   const DAY_NAMES_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+  let weekOffset = 0;
+  let clearedExpanded = false;
+  const CLEARED_PREVIEW_COUNT = 5;
 
   function getWeekRange() {
     // Get Monday-Sunday of the week offset by weekOffset
@@ -380,6 +409,15 @@
       days.push(d);
     }
     return days;
+  }
+
+  function updateWeekTodayBtn() {
+    const btn = document.getElementById('week-today');
+    if (weekOffset === 0) {
+      btn.classList.add('is-current');
+    } else {
+      btn.classList.remove('is-current');
+    }
   }
 
   function getTaskDateKey(task) {
@@ -647,6 +685,23 @@
     updateClock();
     setInterval(updateClock, 1000);
 
+    // Week navigation
+    document.getElementById('week-prev').addEventListener('click', () => {
+      weekOffset--;
+      updateWeekTodayBtn();
+      renderTimeline();
+    });
+    document.getElementById('week-next').addEventListener('click', () => {
+      weekOffset++;
+      updateWeekTodayBtn();
+      renderTimeline();
+    });
+    document.getElementById('week-today').addEventListener('click', () => {
+      weekOffset = 0;
+      updateWeekTodayBtn();
+      renderTimeline();
+    });
+
     // View tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => setView(btn.dataset.view));
@@ -703,6 +758,12 @@
         }
         if (!recurrence) {
           data.recurrenceGroupId = null;
+        }
+        const existing = tasks.find(t => t.id === id);
+        if (data.status === 'cleared' && existing && existing.status !== 'cleared') {
+          data.clearedAt = Date.now();
+        } else if (data.status !== 'cleared' && existing && existing.status === 'cleared') {
+          data.clearedAt = null;
         }
         updateTask(id, data);
       } else {
