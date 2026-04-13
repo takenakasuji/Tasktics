@@ -455,13 +455,15 @@
   const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
   const DAY_NAMES_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
+  let weekOffset = 0;
+
   function getWeekRange() {
-    // Get Monday-Sunday of the current week
+    // Get Monday-Sunday of the week with offset
     const now = new Date();
     const dayOfWeek = now.getDay(); // 0=Sun
     const diffToMon = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
     const monday = new Date(now);
-    monday.setDate(now.getDate() + diffToMon);
+    monday.setDate(now.getDate() + diffToMon + weekOffset * 7);
     monday.setHours(0, 0, 0, 0);
 
     const days = [];
@@ -471,6 +473,15 @@
       days.push(d);
     }
     return days;
+  }
+
+  function updateWeekTodayBtn() {
+    const btn = document.getElementById('week-today');
+    if (weekOffset === 0) {
+      btn.classList.add('is-current');
+    } else {
+      btn.classList.remove('is-current');
+    }
   }
 
   function getTaskDateKey(task) {
@@ -710,6 +721,23 @@
     // Clock
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Week navigation
+    document.getElementById('week-prev').addEventListener('click', () => {
+      weekOffset--;
+      updateWeekTodayBtn();
+      renderTimeline();
+    });
+    document.getElementById('week-next').addEventListener('click', () => {
+      weekOffset++;
+      updateWeekTodayBtn();
+      renderTimeline();
+    });
+    document.getElementById('week-today').addEventListener('click', () => {
+      weekOffset = 0;
+      updateWeekTodayBtn();
+      renderTimeline();
+    });
 
     // View tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {

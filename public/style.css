@@ -220,6 +220,50 @@ select.ctrl-btn option {
   margin-bottom: 8px;
 }
 
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.timeline-header .section-label {
+  margin-bottom: 0;
+}
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.week-nav-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.week-nav-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+.week-today-btn {
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+.week-today-btn.is-current {
+  color: var(--accent-dim);
+  opacity: 0.4;
+  cursor: default;
+}
+.week-today-btn.is-current:hover {
+  border-color: var(--border);
+  color: var(--accent-dim);
+}
+
 #timeline-container {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
