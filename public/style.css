@@ -768,7 +768,7 @@ select.ctrl-btn option {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 400px;
+  width: max(640px, 50vw);
   max-width: 90vw;
   background: var(--bg-secondary);
   border-left: 1px solid var(--border-bright);
