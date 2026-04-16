@@ -68,6 +68,28 @@
     return null;
   }
 
+  // ---- NOTES MARKDOWN ----
+  function renderNotesHTML(markdown) {
+    if (!markdown || !markdown.trim()) return '';
+    const html = window.marked.parse(markdown);
+    return window.DOMPurify.sanitize(html);
+  }
+
+  function setNotesMode(prefix, mode) {
+    const rendered = document.getElementById(prefix + '-notes-rendered');
+    const textarea = document.getElementById(prefix + '-notes');
+    if (mode === 'edit') {
+      rendered.classList.add('hidden');
+      textarea.classList.remove('hidden');
+      setTimeout(() => textarea.focus(), 50);
+    } else {
+      const html = renderNotesHTML(textarea.value);
+      rendered.innerHTML = html || '<span class="notes-empty">— クリックして編集 —</span>';
+      rendered.classList.remove('hidden');
+      textarea.classList.add('hidden');
+    }
+  }
+
   // ---- TASK MODAL ----
   function openPanel() {
     const modal = document.getElementById('task-modal');
@@ -86,6 +108,7 @@
     document.getElementById('task-date').value = State.todayISO();
     document.getElementById('task-notes').value = '';
     resetRecurrenceForm();
+    setNotesMode('task', 'edit');
     document.getElementById('task-delete-btn').classList.add('hidden');
     document.querySelector('.modal-title').textContent = 'NEW TASK';
     openPanel();
@@ -102,6 +125,7 @@
     document.getElementById('task-date').value = task.scheduledDate || '';
     document.getElementById('task-notes').value = task.notes || '';
     populateRecurrenceForm(task.recurrence);
+    setNotesMode('task', 'render');
     document.getElementById('task-delete-btn').classList.remove('hidden');
     document.querySelector('.modal-title').textContent = 'EDIT — ' + task.id;
     openPanel();
@@ -122,6 +146,7 @@
     document.getElementById('milestone-title').value = ms ? ms.title : '';
     document.getElementById('milestone-date').value  = ms ? ms.dueDate : (presetDate || State.todayISO());
     document.getElementById('milestone-notes').value = ms ? (ms.notes || '') : '';
+    setNotesMode('milestone', mode === 'edit' ? 'render' : 'edit');
     const deleteBtn = document.getElementById('milestone-delete-btn');
     deleteBtn.classList.toggle('hidden', mode !== 'edit');
     modal.classList.remove('hidden');
@@ -135,6 +160,12 @@
     modal.classList.remove('open');
     setTimeout(() => modal.classList.add('hidden'), 300);
   }
+
+  // Click-to-edit on rendered notes
+  document.getElementById('task-notes-rendered')
+    .addEventListener('click', () => setNotesMode('task', 'edit'));
+  document.getElementById('milestone-notes-rendered')
+    .addEventListener('click', () => setNotesMode('milestone', 'edit'));
 
   // ---- EXPORT ----
   window.Modal = {
