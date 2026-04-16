@@ -103,13 +103,13 @@
   }
 
   // ---- MILESTONE MODAL ----
-  function openMilestoneModal(mode, ms) {
+  function openMilestoneModal(mode, ms, presetDate) {
     const modal = document.getElementById('milestone-modal');
     document.getElementById('milestone-modal-title').textContent =
       mode === 'edit' ? 'EDIT — ' + ms.id : 'NEW MILESTONE';
     document.getElementById('milestone-id').value    = ms ? ms.id : '';
     document.getElementById('milestone-title').value = ms ? ms.title : '';
-    document.getElementById('milestone-date').value  = ms ? ms.dueDate : State.todayISO();
+    document.getElementById('milestone-date').value  = ms ? ms.dueDate : (presetDate || State.todayISO());
     document.getElementById('milestone-notes').value = ms ? (ms.notes || '') : '';
     const deleteBtn = document.getElementById('milestone-delete-btn');
     deleteBtn.classList.toggle('hidden', mode !== 'edit');
