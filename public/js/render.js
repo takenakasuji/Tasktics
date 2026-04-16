@@ -226,6 +226,9 @@
         <span class="day-name">${DAY_NAMES_EN[dayIdx]} ${DAY_NAMES[dayIdx]}</span>
         <span class="day-date">${dayDate.getMonth() + 1}/${dayDate.getDate()}</span>
       `;
+      header.addEventListener('click', () => {
+        window.Modal.openMilestoneModal('create', null, dateStr);
+      });
       col.appendChild(header);
 
       const body = document.createElement('div');
