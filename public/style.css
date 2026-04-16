@@ -975,6 +975,7 @@ select.ctrl-btn option {
   color: var(--text-primary);
 }
 
+#recurrence-daily-options,
 #recurrence-weekly-options,
 #recurrence-monthly-options {
   margin-top: -8px;
