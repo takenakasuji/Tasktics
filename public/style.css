@@ -1103,6 +1103,7 @@ select.ctrl-btn option {
 
 .notes-textarea {
   min-height: 180px;
+  width: 100%;
   resize: vertical;
 }
 

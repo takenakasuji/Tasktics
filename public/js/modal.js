@@ -69,10 +69,18 @@
   }
 
   // ---- NOTES MARKDOWN ----
+  // External links in rendered notes should open in a new window, not replace the app.
+  window.DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+    if (node.tagName === 'A') {
+      node.setAttribute('target', '_blank');
+      node.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+
   function renderNotesHTML(markdown) {
     if (!markdown || !markdown.trim()) return '';
     const html = window.marked.parse(markdown);
-    return window.DOMPurify.sanitize(html);
+    return window.DOMPurify.sanitize(html, { ADD_ATTR: ['target', 'rel'] });
   }
 
   function setNotesMode(prefix, mode) {
