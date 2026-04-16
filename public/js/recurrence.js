@@ -26,9 +26,14 @@
     return `${parseInt(m, 10)}/${parseInt(d, 10)}`;
   }
 
-  function calcNextDailyDate(fromDateStr) {
+  function calcNextDailyDate(fromDateStr, skipWeekends) {
     const current = new Date(fromDateStr + 'T00:00:00');
     current.setDate(current.getDate() + 1);
+    if (skipWeekends) {
+      const day = current.getDay();
+      if (day === 6) current.setDate(current.getDate() + 2);
+      else if (day === 0) current.setDate(current.getDate() + 1);
+    }
     return formatDateISO(current);
   }
 

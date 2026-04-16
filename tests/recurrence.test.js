@@ -199,6 +199,30 @@ describe('calcNextDailyDate', () => {
   test('閏年の2月28日から29日', () => {
     expect(calcNextDailyDate('2024-02-28')).toBe('2024-02-29');
   });
+
+  test('skipWeekends=true: 金曜の翌日は土日をスキップして月曜', () => {
+    expect(calcNextDailyDate('2026-04-17', true)).toBe('2026-04-20');
+  });
+
+  test('skipWeekends=true: 土曜の翌日は日曜をスキップして月曜', () => {
+    expect(calcNextDailyDate('2026-04-18', true)).toBe('2026-04-20');
+  });
+
+  test('skipWeekends=true: 日曜の翌日は月曜のまま', () => {
+    expect(calcNextDailyDate('2026-04-19', true)).toBe('2026-04-20');
+  });
+
+  test('skipWeekends=true: 平日（月〜木）は翌日', () => {
+    expect(calcNextDailyDate('2026-04-14', true)).toBe('2026-04-15');
+  });
+
+  test('skipWeekends=false: 従来通り翌日（金曜→土曜）', () => {
+    expect(calcNextDailyDate('2026-04-17', false)).toBe('2026-04-18');
+  });
+
+  test('skipWeekends 未指定: 従来通り翌日（後方互換）', () => {
+    expect(calcNextDailyDate('2026-04-17')).toBe('2026-04-18');
+  });
 });
 
 // ---- sortTasksByPriority ----
