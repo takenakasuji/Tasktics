@@ -109,6 +109,9 @@ export function migrateFromJson() {
 }
 
 export function registerIpcHandlers() {
+  // app:version
+  ipcMain.handle('app:version', () => app.getVersion());
+
   // tasks:load
   ipcMain.handle('tasks:load', () => {
     const rows = db.prepare('SELECT * FROM tasks ORDER BY sort_order ASC').all();

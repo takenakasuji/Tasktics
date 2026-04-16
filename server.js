@@ -6,7 +6,7 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { mkdirSync } from 'fs';
+import { mkdirSync, readFileSync } from 'fs';
 import Database from 'better-sqlite3';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -53,6 +53,9 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+const pkg = JSON.parse(readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+app.get('/api/version', (_req, res) => res.json({ version: pkg.version }));
 
 // ---- Tasks ----
 app.get('/api/tasks', (_req, res) => {

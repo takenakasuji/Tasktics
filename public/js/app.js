@@ -6,6 +6,20 @@
 (function () {
   'use strict';
 
+  // ---- VERSION ----
+  async function loadVersion() {
+    try {
+      let version;
+      if (window.taskticsBridge && window.taskticsBridge.getVersion) {
+        version = await window.taskticsBridge.getVersion();
+      } else {
+        const res = await fetch('/api/version');
+        version = (await res.json()).version;
+      }
+      document.getElementById('app-version').textContent = `v${version}`;
+    } catch (_) { /* ignore — header version is cosmetic */ }
+  }
+
   // ---- CLOCK ----
   function updateClock() {
     const now = new Date();
@@ -55,6 +69,7 @@
     // Expose render for other modules (DragDrop, Render's week nav)
     window.App = { render };
 
+    loadVersion();
     updateClock();
     setInterval(updateClock, 1000);
 
