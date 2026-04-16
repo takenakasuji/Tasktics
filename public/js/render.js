@@ -238,7 +238,7 @@
         const el = document.createElement('div');
         el.className = 'milestone-marker';
         el.dataset.id = ms.id;
-        el.innerHTML = `<span class="ms-diamond">◆</span><span class="ms-title">${escapeHtml(ms.title)}</span>`;
+        el.innerHTML = `<span class="ms-diamond">◢</span><span class="ms-title">${escapeHtml(ms.title)}</span>`;
         el.addEventListener('click', () => window.Modal.openMilestoneModal('edit', ms));
         body.appendChild(el);
       });
