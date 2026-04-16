@@ -3,32 +3,32 @@
    ============================================ */
 
 :root {
-  --bg-primary: #0a0e14;
-  --bg-secondary: #0d1117;
-  --bg-card: #111922;
-  --bg-card-hover: #162030;
-  --border: #1e3a4a;
-  --border-bright: #2a5a6a;
-  --text-primary: #c8d6e5;
-  --text-secondary: #6b8899;
-  --text-dim: #3a5566;
-  --accent: #00ff88;
-  --accent-dim: #00aa55;
-  --accent-glow: rgba(0, 255, 136, 0.15);
-  --urg: #ff4444;
-  --urg-bg: rgba(255, 68, 68, 0.12);
-  --hi: #ff8800;
-  --hi-bg: rgba(255, 136, 0, 0.12);
-  --nrm: #00cc66;
-  --nrm-bg: rgba(0, 204, 102, 0.12);
-  --lo: #4488cc;
-  --lo-bg: rgba(68, 136, 204, 0.12);
-  --active-bg: rgba(0, 255, 136, 0.05);
-  --holding-bg: rgba(255, 136, 0, 0.05);
-  --cleared-bg: rgba(100, 120, 140, 0.05);
-  --next-bg: rgba(0, 170, 255, 0.05);
-  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
-  --font-display: 'Orbitron', 'Share Tech Mono', monospace;
+  --bg-primary: #080c18;
+  --bg-secondary: #0d1424;
+  --bg-card: #111b2e;
+  --bg-card-hover: #162040;
+  --border: #1a2a45;
+  --border-bright: #2a3a5f;
+  --text-primary: #c8d6e8;
+  --text-secondary: #4a6a88;
+  --text-dim: #2a4a68;
+  --accent: #5ec4d4;
+  --accent-dim: #3a8a9a;
+  --accent-glow: rgba(94, 196, 212, 0.12);
+  --urg: #ff5544;
+  --urg-bg: rgba(255, 85, 68, 0.08);
+  --hi: #ff9944;
+  --hi-bg: rgba(255, 153, 68, 0.08);
+  --nrm: #5ec4d4;
+  --nrm-bg: rgba(94, 196, 212, 0.06);
+  --lo: #3a6699;
+  --lo-bg: rgba(58, 102, 153, 0.08);
+  --active-bg: rgba(94, 196, 212, 0.04);
+  --holding-bg: rgba(255, 153, 68, 0.04);
+  --cleared-bg: rgba(100, 120, 140, 0.04);
+  --next-bg: rgba(58, 102, 153, 0.04);
+  --font-mono: 'Source Code Pro', 'Courier New', monospace;
+  --font-display: 'Chakra Petch', 'Source Code Pro', monospace;
   --radius: 4px;
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
