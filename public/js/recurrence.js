@@ -78,7 +78,18 @@
     const todayDate = new Date(today + 'T00:00:00');
 
     if (recurrence.type === 'daily') {
-      // 毎日タスクは今日からスタート
+      if (!recurrence.skipWeekends) return today;
+      const day = todayDate.getDay();
+      if (day === 6) {
+        const mon = new Date(todayDate);
+        mon.setDate(mon.getDate() + 2);
+        return formatDateISO(mon);
+      }
+      if (day === 0) {
+        const mon = new Date(todayDate);
+        mon.setDate(mon.getDate() + 1);
+        return formatDateISO(mon);
+      }
       return today;
     }
     if (recurrence.type === 'weekly') {

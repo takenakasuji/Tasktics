@@ -194,6 +194,31 @@ describe('calcFirstScheduledDate', () => {
     const result = calcFirstScheduledDate({ type: 'daily' }, '2026-04-14');
     expect(result).toBe('2026-04-14');
   });
+
+  test('daily + skipWeekends=true: 今日が土曜なら月曜を返す', () => {
+    const result = calcFirstScheduledDate({ type: 'daily', skipWeekends: true }, '2026-04-18');
+    expect(result).toBe('2026-04-20');
+  });
+
+  test('daily + skipWeekends=true: 今日が日曜なら月曜を返す', () => {
+    const result = calcFirstScheduledDate({ type: 'daily', skipWeekends: true }, '2026-04-19');
+    expect(result).toBe('2026-04-20');
+  });
+
+  test('daily + skipWeekends=true: 今日が平日なら今日を返す', () => {
+    const result = calcFirstScheduledDate({ type: 'daily', skipWeekends: true }, '2026-04-14');
+    expect(result).toBe('2026-04-14');
+  });
+
+  test('daily + skipWeekends=false: 今日が土曜でも今日を返す（従来通り）', () => {
+    const result = calcFirstScheduledDate({ type: 'daily', skipWeekends: false }, '2026-04-18');
+    expect(result).toBe('2026-04-18');
+  });
+
+  test('daily + skipWeekends 未指定: 今日が土曜でも今日を返す（後方互換）', () => {
+    const result = calcFirstScheduledDate({ type: 'daily' }, '2026-04-18');
+    expect(result).toBe('2026-04-18');
+  });
 });
 
 // ---- calcNextDailyDate ----
