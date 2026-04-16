@@ -241,7 +241,8 @@
         </div>
         <div class="form-row">
           <label>NOTES</label>
-          <textarea id="milestone-notes" rows="3" placeholder="メモ"></textarea>
+          <div id="milestone-notes-rendered" class="notes-rendered"></div>
+          <textarea id="milestone-notes" class="notes-textarea hidden" rows="8" placeholder="メモ (Markdown対応)"></textarea>
         </div>
         <div class="form-actions">
           <button type="button" id="milestone-delete-btn" class="btn-danger hidden">DELETE</button>
