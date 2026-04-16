@@ -1,7 +1,7 @@
 {
   "name": "tasktics",
   "version": "0.1.0",
-  "description": "ATC-themed task management tool",
+  "description": "Military HUD-themed task management tool",
   "author": "takenakasuji",
   "main": "src/main.js",
   "type": "module",
