@@ -19,7 +19,7 @@
     document.getElementById('task-recurrence-type').value = 'none';
     document.getElementById('task-recurrence-dow').value = '5';
     document.getElementById('task-recurrence-dom').value = '-1';
-    document.getElementById('task-recurrence-skip-weekends').checked = false;
+    document.getElementById('task-recurrence-skip-weekends').value = 'false';
     setRecurrenceFormVisibility();
   }
 
@@ -35,8 +35,8 @@
     if (recurrence.type === 'monthly' && recurrence.dayOfMonth != null) {
       document.getElementById('task-recurrence-dom').value = String(recurrence.dayOfMonth);
     }
-    document.getElementById('task-recurrence-skip-weekends').checked =
-      recurrence.type === 'daily' && !!recurrence.skipWeekends;
+    document.getElementById('task-recurrence-skip-weekends').value =
+      recurrence.type === 'daily' && recurrence.skipWeekends ? 'true' : 'false';
     setRecurrenceFormVisibility();
   }
 
@@ -48,7 +48,7 @@
         type: 'daily',
         dayOfWeek: null,
         dayOfMonth: null,
-        skipWeekends: document.getElementById('task-recurrence-skip-weekends').checked,
+        skipWeekends: document.getElementById('task-recurrence-skip-weekends').value === 'true',
       };
     }
     if (type === 'weekly') {
