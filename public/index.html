@@ -152,11 +152,14 @@
             <option value="monthly">毎月 (Monthly)</option>
           </select>
         </div>
-        <div class="form-row hidden" id="recurrence-daily-options">
-          <label>SKIP WEEKENDS</label>
-          <label class="checkbox-label">
+        <div class="toggle-field hidden" id="recurrence-daily-options">
+          <label class="toggle-field-label">
             <input type="checkbox" id="task-recurrence-skip-weekends">
-            <span>土日除外</span>
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-copy">
+              <span class="toggle-copy-main">SKIP WEEKENDS</span>
+              <span class="toggle-copy-sub">土日除外</span>
+            </span>
           </label>
         </div>
         <div class="form-row hidden" id="recurrence-weekly-options">
