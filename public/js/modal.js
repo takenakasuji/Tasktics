@@ -175,6 +175,107 @@
   document.getElementById('milestone-notes-rendered')
     .addEventListener('click', () => setNotesMode('milestone', 'edit'));
 
+  // ---- NOTES TEXTAREA KEY HANDLERS (Tab / Enter for markdown lists) ----
+  function handleNotesTab(textarea, isShift) {
+    const { selectionStart: start, selectionEnd: end, value } = textarea;
+    const firstLineStart = value.lastIndexOf('\n', start - 1) + 1;
+    const selectedText = value.slice(firstLineStart, end);
+    const lines = selectedText.split('\n');
+    let firstDelta = 0;
+    let totalDelta = 0;
+
+    const newLines = lines.map((line, i) => {
+      if (isShift) {
+        const spaces = line.match(/^ */)[0].length;
+        const remove = Math.min(2, spaces);
+        if (i === 0) firstDelta = -remove;
+        totalDelta -= remove;
+        return line.slice(remove);
+      }
+      if (i === 0) firstDelta = 2;
+      totalDelta += 2;
+      return '  ' + line;
+    });
+
+    const newBlock = newLines.join('\n');
+    textarea.value = value.slice(0, firstLineStart) + newBlock + value.slice(end);
+    textarea.selectionStart = Math.max(firstLineStart, start + firstDelta);
+    textarea.selectionEnd = end + totalDelta;
+  }
+
+  // Returns true if the Enter was handled (caller should preventDefault).
+  function handleNotesEnter(textarea) {
+    if (textarea.selectionStart !== textarea.selectionEnd) return false;
+    const pos = textarea.selectionStart;
+    const value = textarea.value;
+    const lineStart = value.lastIndexOf('\n', pos - 1) + 1;
+    const lineToCursor = value.slice(lineStart, pos);
+
+    // Checkbox: `- [ ] ` or `- [x] `
+    let match = lineToCursor.match(/^(\s*)([-*+]) \[[ xX]\] (.*)$/);
+    if (match) {
+      const [, indent, marker, rest] = match;
+      if (rest.length === 0) {
+        textarea.value = value.slice(0, lineStart) + value.slice(pos);
+        textarea.selectionStart = textarea.selectionEnd = lineStart;
+        return true;
+      }
+      const insert = '\n' + indent + marker + ' [ ] ';
+      textarea.value = value.slice(0, pos) + insert + value.slice(pos);
+      textarea.selectionStart = textarea.selectionEnd = pos + insert.length;
+      return true;
+    }
+
+    // Unordered: `- `, `* `, `+ `
+    match = lineToCursor.match(/^(\s*)([-*+]) (.*)$/);
+    if (match) {
+      const [, indent, marker, rest] = match;
+      if (rest.length === 0) {
+        textarea.value = value.slice(0, lineStart) + value.slice(pos);
+        textarea.selectionStart = textarea.selectionEnd = lineStart;
+        return true;
+      }
+      const insert = '\n' + indent + marker + ' ';
+      textarea.value = value.slice(0, pos) + insert + value.slice(pos);
+      textarea.selectionStart = textarea.selectionEnd = pos + insert.length;
+      return true;
+    }
+
+    // Ordered: `1. `, `2. ` ...
+    match = lineToCursor.match(/^(\s*)(\d+)\. (.*)$/);
+    if (match) {
+      const [, indent, num, rest] = match;
+      if (rest.length === 0) {
+        textarea.value = value.slice(0, lineStart) + value.slice(pos);
+        textarea.selectionStart = textarea.selectionEnd = lineStart;
+        return true;
+      }
+      const insert = '\n' + indent + (parseInt(num, 10) + 1) + '. ';
+      textarea.value = value.slice(0, pos) + insert + value.slice(pos);
+      textarea.selectionStart = textarea.selectionEnd = pos + insert.length;
+      return true;
+    }
+
+    return false;
+  }
+
+  function attachNotesKeyHandlers(textarea) {
+    textarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        handleNotesTab(textarea, e.shiftKey);
+        return;
+      }
+      // Cmd/Ctrl+Enter is reserved for form submit (app.js handles it).
+      if (e.key === 'Enter' && !e.metaKey && !e.ctrlKey) {
+        if (handleNotesEnter(textarea)) e.preventDefault();
+      }
+    });
+  }
+
+  attachNotesKeyHandlers(document.getElementById('task-notes'));
+  attachNotesKeyHandlers(document.getElementById('milestone-notes'));
+
   // ---- EXPORT ----
   window.Modal = {
     setRecurrenceFormVisibility,
