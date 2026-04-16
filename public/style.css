@@ -304,6 +304,12 @@ select.ctrl-btn option {
   color: var(--text-dim);
   letter-spacing: 1px;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.week-day-header:hover {
+  background: var(--accent-glow);
 }
 
 .week-day-header .day-name {
