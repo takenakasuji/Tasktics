@@ -536,7 +536,7 @@ select.ctrl-btn option {
 }
 
 .kanban-column[data-status="next"] .col-icon {
-  color: #00aaff;
+  color: var(--accent);
 }
 
 .col-title {
@@ -601,7 +601,7 @@ select.ctrl-btn option {
 .dnd-placeholder {
   border: 2px dashed var(--accent);
   border-radius: var(--radius);
-  background: rgba(0, 255, 65, 0.04);
+  background: rgba(94, 196, 212, 0.04);
   margin: 4px 0;
   box-sizing: border-box;
   pointer-events: none;
@@ -883,7 +883,7 @@ select.ctrl-btn option {
 }
 
 .btn-primary:hover {
-  background: #00ffaa;
+  background: #7dd4e0;
 }
 
 .btn-danger {
