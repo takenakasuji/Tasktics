@@ -126,6 +126,21 @@ describe('getNextOccurrenceDate', () => {
   test('不明な type のとき null を返す', () => {
     expect(getNextOccurrenceDate({ type: 'unknown' }, '2026-04-14')).toBeNull();
   });
+
+  test('daily + skipWeekends=true: 金曜から月曜を返す', () => {
+    const recurrence = { type: 'daily', skipWeekends: true };
+    expect(getNextOccurrenceDate(recurrence, '2026-04-17')).toBe('2026-04-20');
+  });
+
+  test('daily + skipWeekends=false: 金曜から土曜を返す', () => {
+    const recurrence = { type: 'daily', skipWeekends: false };
+    expect(getNextOccurrenceDate(recurrence, '2026-04-17')).toBe('2026-04-18');
+  });
+
+  test('daily + skipWeekends 未指定: 従来通り翌日', () => {
+    const recurrence = { type: 'daily' };
+    expect(getNextOccurrenceDate(recurrence, '2026-04-17')).toBe('2026-04-18');
+  });
 });
 
 // ---- calcFirstScheduledDate ----

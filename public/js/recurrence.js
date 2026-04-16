@@ -62,7 +62,7 @@
   function getNextOccurrenceDate(recurrence, fromDateStr) {
     if (!recurrence) return null;
     if (recurrence.type === 'daily') {
-      return calcNextDailyDate(fromDateStr);
+      return calcNextDailyDate(fromDateStr, recurrence.skipWeekends);
     }
     if (recurrence.type === 'weekly') {
       return calcNextWeeklyDate(fromDateStr, recurrence.dayOfWeek);
