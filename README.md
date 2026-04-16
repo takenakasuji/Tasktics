@@ -1,133 +1,167 @@
 # Tasktics
 
-ATC（航空管制）テーマのタスク管理デスクトップアプリ。Electron + SQLite + Vanilla JS。
+A Military HUD–themed task management desktop app. Electron + SQLite + vanilla JS.
 
-## セットアップ
+## Setup
 
 ```bash
-npm install   # postinstall で better-sqlite3 が自動リビルドされる
+npm install   # postinstall rebuilds better-sqlite3 for Electron
 npm start
 ```
 
-## パッケージビルド
+`npm start` launches the Electron app. For browser-only development, you can also run `node server.js` to start an Express entry point that serves the same frontend.
+
+## Packaging
 
 ```bash
 npm run dist
 ```
 
-`dist/` に DMG が生成されます。
+DMGs are emitted to `dist/`.
 
-| ファイル | 対象 |
+| File | Target |
 |---|---|
 | `Tasktics-x.x.x-arm64.dmg` | Apple Silicon (M1/M2/M3) |
 | `Tasktics-x.x.x.dmg` | Intel Mac |
 
-> コード署名なしの場合、初回起動時は右クリック → 開く で実行してください。
+> Without code signing, right-click → Open on first launch.
 
-## アーキテクチャ
+## Tests
 
-### Electron Main Process (`main.js`)
+```bash
+npm test        # run once with vitest
+npm run test:watch
+```
 
-- アプリウィンドウの作成・管理
-- SQLite DB の初期化・CRUD（better-sqlite3）
-- IPC ハンドラで Renderer からのデータ操作を受け付ける
-  - `tasks:load` — 全タスクと idCounter を返す
-  - `tasks:save` — tasks 配列と idCounter を一括保存
-- 初回起動時に `data/tasks.json` が存在すれば自動マイグレーション
+## Architecture
 
-### IPC ブリッジ (`preload.js`)
+### Electron main process (`src/main.js`)
 
-- `contextBridge` で `window.taskticsBridge` を Renderer に公開
-  - `loadData()` — `tasks:load` IPC を呼び出す
-  - `saveData(payload)` — `tasks:save` IPC を呼び出す
+- Creates and manages the app window.
+- Delegates database concerns to `src/db.js`.
 
-### フロントエンド (`public/`)
+### Database layer (`src/db.js`)
 
-| ファイル | 役割 |
+- SQLite via `better-sqlite3`.
+- Initialization, schema migrations, and CRUD.
+- Registers IPC handlers consumed by the renderer:
+  - `tasks:load` — returns all tasks and the ID counter.
+  - `tasks:save` — persists the tasks array and counter atomically.
+- Auto-migrates from a legacy `data/tasks.json` on first run if present.
+
+### IPC bridge (`src/preload.cjs`)
+
+- Uses `contextBridge` to expose `window.taskticsBridge` to the renderer:
+  - `loadData()` — calls `tasks:load`.
+  - `saveData(payload)` — calls `tasks:save`.
+
+### Frontend (`public/`)
+
+| File | Responsibility |
 |---|---|
-| `index.html` | アプリシェル。フォント・スクリプトの読み込み |
-| `app.js` | 全アプリケーションロジック（単一グローバルスコープ） |
-| `style.css` | ATCテーマのダーク UI（ネオングリーンアクセント） |
+| `index.html` | App shell — loads fonts and scripts |
+| `js/state.js` | In-memory state, filters, ID counter |
+| `js/render.js` | Rendering (Hybrid / Kanban / Timeline) |
+| `js/modal.js` | Task and milestone modals |
+| `js/dragdrop.js` | Drag-and-drop status transitions |
+| `js/recurrence.js` | Recurrence logic and date helpers |
+| `js/app.js` | Bootstrap and event wiring |
+| `style.css` | Military HUD theme — dark navy with ice-blue accent |
 
-### データフロー
+### Data flow
 
-- 全ステートは `app.js` のメモリ上に保持
-- 変更は 300ms デバウンスして `taskticsBridge.saveData()` で自動保存
-- タスク ID は `FS0001`, `FS0002` ... の形式
+- All state lives in memory on the renderer.
+- Changes are debounced (300 ms) and flushed via `taskticsBridge.saveData()`.
+- Task IDs follow `FS0001`, `FS0002`, ...
 
-### データ保存先
+### Storage location
 
-- macOS: `~/Library/Application Support/tasktics/tasktics.db`
+- macOS: `~/Library/Application Support/Tasktics/tasktics.db`
 
-## タスクモデル
+## Task model
 
 ```js
 {
-  id,               // "FS0001" 形式
+  id,                // "FS0001"
   title,
   category,
-  priority,         // "URG" | "HI" | "NRM" | "LO"
-  status,           // "active" | "next" | "holding" | "cleared"
-  time,             // "HH:MM"
+  priority,          // "URG" | "HI" | "NRM" | "LO"
+  status,            // "active" | "next" | "holding" | "cleared"
+  time,              // "HH:MM"
   notes,
-  createdAt,        // Unix timestamp (ms)
-  scheduledDate,    // ISO date string ("YYYY-MM-DD") | null
-  recurrence,       // null | { type: "weekly"|"monthly", dayOfWeek?: 0-6, dayOfMonth?: 1-31|-1 }
-  recurrenceGroupId // 繰り返しグループの識別子 | null
+  createdAt,         // Unix timestamp (ms)
+  scheduledDate,     // ISO date ("YYYY-MM-DD") | null
+  recurrence,        // null | { type: "daily"|"weekly"|"monthly", dayOfWeek?: 0-6, dayOfMonth?: 1-31|-1 }
+  recurrenceGroupId  // recurrence group identifier | null
 }
 ```
 
-## ビュー
+## Views
 
-### HYBRID（デフォルト）
-週間タイムライン + カンバンボードを同時表示。
+### HYBRID (default)
+Weekly timeline and Kanban board displayed together.
 
 ### KANBAN
-4列のステータス管理：
-- **ACTIVE** — 進行中
-- **NEXT ACTION** — 次のアクション
-- **HOLDING** — 待機中
-- **CLEARED** — 完了（最新5件を表示、超過分は「SHOW MORE」で展開）
+Four-column status board:
+- **ACTIVE** — in progress
+- **NEXT ACTION** — next up
+- **HOLDING** — on hold
+- **CLEARED** — done (newest five shown, remainder behind a "SHOW MORE" affordance)
 
-タスクカードはドラッグ&ドロップでステータス変更可能。
+Cards can be moved between columns via drag and drop.
 
 ### TIMELINE
-週間カレンダー。CLEAREDタスクは非表示。◁ PREV / ● TODAY / NEXT ▷ で週移動。
+Weekly calendar (Sunday → Saturday). Cleared tasks are hidden. Navigate with ◁ PREV / ● TODAY / NEXT ▷.
 
-## 主な操作
+## Key interactions
 
-| 操作 | 方法 |
+| Action | How |
 |---|---|
-| タスク追加 | ヘッダーの `+ TASK` ボタン |
-| タスク編集 | カードクリックでスライドパネルを開く |
-| 保存 | `SAVE` ボタン または `Cmd+Enter` |
-| 完了切り替え | カードの `✓` ボタン（CLEARED ↔ ACTIVE） |
-| ステータス変更 | ドラッグ&ドロップ |
-| 完了タスクを一括削除 | CLEAREDカラムヘッダーの `PURGE` ボタン |
-| パネルを閉じる | `Esc` キー |
+| Add a task | `+ TASK` in the header |
+| Edit a task | Click a card to open the side panel |
+| Save | `SAVE` button or `Cmd+Enter` |
+| Toggle complete | `✓` button on a card (CLEARED ↔ ACTIVE) |
+| Change status | Drag and drop |
+| Purge cleared tasks | `PURGE` in the CLEARED column header |
+| Close the panel | `Esc` |
 
-## フィルター
+## Filters
 
-ヘッダーのドロップダウンで優先度・カテゴリを絞り込み可能。
+The header dropdowns filter by priority and category.
 
-## 繰り返しタスク (Recurrence)
+## Recurrence
 
-- 毎週（曜日指定）または毎月（日付指定）の繰り返しを設定可能
-- CLEAREDにすると次回インスタンスが自動生成される
-- 同グループのタスクは `recurrenceGroupId` で紐付け
+- Daily, weekly (by day of week), or monthly (by day of month, including end-of-month).
+- Clearing a recurring task auto-generates the next instance.
+- Related instances are linked through `recurrenceGroupId`.
 
-## ファイル構成
+## Milestones
+
+- Separate from tasks; identified by a due date.
+- Rendered as a highlighted bar on the corresponding day in the timeline.
+
+## Project layout
 
 ```
 Tasktics/
-├── main.js            # Electron Main Process（SQLite + IPC）
-├── preload.js         # contextBridge IPC ブリッジ
-├── package.json
+├── src/
+│   ├── main.js           # Electron main process
+│   ├── preload.cjs       # contextBridge IPC
+│   └── db.js             # SQLite + IPC handlers
+├── server.js             # Optional Express entry point (browser-only dev)
 ├── public/
 │   ├── index.html
-│   ├── app.js
-│   └── style.css
-├── dist/              # ビルド成果物（git-ignored）
-└── data/
-    └── tasks.json     # マイグレーション元（初回起動後は参照されない）
+│   ├── style.css
+│   └── js/
+│       ├── state.js
+│       ├── render.js
+│       ├── modal.js
+│       ├── dragdrop.js
+│       ├── recurrence.js
+│       └── app.js
+├── tests/
+│   └── recurrence.test.js
+├── docs/                 # Design specs and implementation plans
+├── dist/                 # Build artifacts (git-ignored)
+└── data/                 # Legacy JSON migration source (git-ignored)
 ```
