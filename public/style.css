@@ -241,7 +241,7 @@ select.ctrl-btn option {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 3px;
@@ -254,7 +254,7 @@ select.ctrl-btn option {
 .week-nav-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(0, 255, 136, 0.05);
+  background: var(--accent-glow);
 }
 
 .week-nav-today {
@@ -268,7 +268,7 @@ select.ctrl-btn option {
 }
 
 .week-nav-today:not(.current):hover {
-  background: rgba(0, 255, 136, 0.12);
+  background: var(--accent-glow);
 }
 
 #timeline-week-grid {
@@ -455,11 +455,11 @@ select.ctrl-btn option {
 }
 
 .kanban-column[data-status="active"] {
-  border-color: rgba(0, 255, 136, 0.3);
+  border-color: rgba(94, 196, 212, 0.3);
 }
 
 .kanban-column[data-status="next"] {
-  border-color: rgba(0, 170, 255, 0.3);
+  border-color: rgba(58, 102, 153, 0.3);
 }
 
 .kanban-column[data-status="holding"] {
