@@ -153,15 +153,14 @@
   function getWeekRange() {
     const now = new Date();
     const dayOfWeek = now.getDay();
-    const diffToMon = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + diffToMon + State.weekOffset * 7);
-    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - dayOfWeek + State.weekOffset * 7);
+    sunday.setHours(0, 0, 0, 0);
 
     const days = [];
     for (let i = 0; i < 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
+      const d = new Date(sunday);
+      d.setDate(sunday.getDate() + i);
       days.push(d);
     }
     return days;
