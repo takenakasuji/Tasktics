@@ -10,6 +10,7 @@
   // ---- RECURRENCE FORM ----
   function setRecurrenceFormVisibility() {
     const type = document.getElementById('task-recurrence-type').value;
+    document.getElementById('recurrence-daily-options').classList.toggle('hidden', type !== 'daily');
     document.getElementById('recurrence-weekly-options').classList.toggle('hidden', type !== 'weekly');
     document.getElementById('recurrence-monthly-options').classList.toggle('hidden', type !== 'monthly');
   }
@@ -18,6 +19,7 @@
     document.getElementById('task-recurrence-type').value = 'none';
     document.getElementById('task-recurrence-dow').value = '5';
     document.getElementById('task-recurrence-dom').value = '-1';
+    document.getElementById('task-recurrence-skip-weekends').checked = false;
     setRecurrenceFormVisibility();
   }
 
@@ -33,13 +35,22 @@
     if (recurrence.type === 'monthly' && recurrence.dayOfMonth != null) {
       document.getElementById('task-recurrence-dom').value = String(recurrence.dayOfMonth);
     }
+    document.getElementById('task-recurrence-skip-weekends').checked =
+      recurrence.type === 'daily' && !!recurrence.skipWeekends;
     setRecurrenceFormVisibility();
   }
 
   function readRecurrenceForm() {
     const type = document.getElementById('task-recurrence-type').value;
     if (type === 'none') return null;
-    if (type === 'daily') return { type: 'daily', dayOfWeek: null, dayOfMonth: null };
+    if (type === 'daily') {
+      return {
+        type: 'daily',
+        dayOfWeek: null,
+        dayOfMonth: null,
+        skipWeekends: document.getElementById('task-recurrence-skip-weekends').checked,
+      };
+    }
     if (type === 'weekly') {
       return {
         type: 'weekly',
