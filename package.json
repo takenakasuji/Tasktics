@@ -1,6 +1,6 @@
 {
   "name": "tasktics",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Military HUD-themed task management tool",
   "author": "takenakasuji",
   "main": "src/main.js",
