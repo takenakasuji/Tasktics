@@ -282,6 +282,7 @@ select.ctrl-btn option {
   display: flex;
   flex-direction: column;
   min-height: 120px;
+  min-width: 0;
 }
 
 .week-day-col:last-child {
