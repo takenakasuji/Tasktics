@@ -79,14 +79,14 @@
   // ---- STATS ----
   function updateStats() {
     const all = State.tasks;
+    document.getElementById('stat-que').textContent = all.filter(t => t.status === 'que').length;
     document.getElementById('stat-act').textContent = all.filter(t => t.status === 'active').length;
-    document.getElementById('stat-nxt').textContent = all.filter(t => t.status === 'next').length;
     document.getElementById('stat-hld').textContent = all.filter(t => t.status === 'holding').length;
     document.getElementById('stat-clr').textContent = all.filter(t => t.status === 'cleared').length;
     document.getElementById('stat-urg').textContent = all.filter(t => t.priority === 'URG' && t.status !== 'cleared').length;
 
     const filtered = State.getFilteredTasks();
-    ['active', 'next', 'holding', 'cleared'].forEach(status => {
+    ['que', 'active', 'holding', 'cleared'].forEach(status => {
       const el = document.getElementById('col-count-' + status);
       if (el) el.textContent = filtered.filter(t => t.status === status).length;
     });
@@ -126,7 +126,7 @@
     const filtered = State.getFilteredTasks();
     const CLEARED_PREVIEW_COUNT = State.CLEARED_PREVIEW_COUNT;
 
-    ['active', 'next', 'holding', 'cleared'].forEach(status => {
+    ['que', 'active', 'holding', 'cleared'].forEach(status => {
       const col = document.querySelector(`.column-body[data-status="${status}"]`);
       col.innerHTML = '';
       const items = filtered

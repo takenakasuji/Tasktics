@@ -17,8 +17,8 @@
       <span class="header-version" id="app-version"></span>
     </div>
     <div class="header-stats">
+      <span class="stat">QUE:<span id="stat-que">0</span></span>
       <span class="stat">ACT:<span id="stat-act">0</span></span>
-      <span class="stat">NXT:<span id="stat-nxt">0</span></span>
       <span class="stat">HLD:<span id="stat-hld">0</span></span>
       <span class="stat">CLR:<span id="stat-clr">0</span></span>
       <span class="stat stat-urg">URG:<span id="stat-urg">0</span></span>
@@ -58,6 +58,16 @@
   <!-- Kanban Board -->
   <section id="kanban-section">
     <div class="kanban-board">
+      <!-- QUE -->
+      <div class="kanban-column" data-status="que">
+        <div class="column-header">
+          <span class="col-icon">◇</span>
+          <span class="col-title">QUE</span>
+          <span class="col-sub">待ち</span>
+          <span class="col-count" id="col-count-que">0</span>
+        </div>
+        <div class="column-body" data-status="que"></div>
+      </div>
       <!-- ACTIVE -->
       <div class="kanban-column" data-status="active">
         <div class="column-header">
@@ -67,16 +77,6 @@
           <span class="col-count" id="col-count-active">0</span>
         </div>
         <div class="column-body" data-status="active"></div>
-      </div>
-      <!-- NEXT ACTION -->
-      <div class="kanban-column" data-status="next">
-        <div class="column-header">
-          <span class="col-icon">→</span>
-          <span class="col-title">NEXT ACTION</span>
-          <span class="col-sub">次のアクション</span>
-          <span class="col-count" id="col-count-next">0</span>
-        </div>
-        <div class="column-body" data-status="next"></div>
       </div>
       <!-- HOLDING -->
       <div class="kanban-column" data-status="holding">
@@ -133,8 +133,8 @@
         <div class="form-row">
           <label>STATUS</label>
           <select id="task-status">
+            <option value="que">QUE</option>
             <option value="active">ACTIVE</option>
-            <option value="next">NEXT ACTION</option>
             <option value="holding">HOLDING</option>
             <option value="cleared">CLEARED</option>
           </select>

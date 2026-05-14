@@ -33,6 +33,10 @@
       idCounter = data.idCounter || 0;
       milestones = msData.milestones || [];
       milestoneIdCounter = msData.milestoneIdCounter || 0;
+      // Migrate legacy 'next' status to 'que'
+      let migrated = false;
+      tasks.forEach(t => { if (t.status === 'next') { t.status = 'que'; migrated = true; } });
+      if (migrated) saveData();
       return true;
     } catch (err) {
       console.error('Failed to load data:', err);
@@ -184,7 +188,7 @@
       title: task.title,
       category: task.category,
       priority: task.priority,
-      status: 'next',
+      status: 'que',
       notes: task.notes,
       recurrence: { ...task.recurrence },
       scheduledDate: nextDate,

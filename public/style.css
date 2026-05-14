@@ -26,7 +26,7 @@
   --active-bg: rgba(94, 196, 212, 0.04);
   --holding-bg: rgba(255, 153, 68, 0.04);
   --cleared-bg: rgba(100, 120, 140, 0.04);
-  --next-bg: rgba(58, 102, 153, 0.04);
+  --que-bg: rgba(58, 102, 153, 0.04);
   --font-mono: 'Source Code Pro', 'Courier New', monospace;
   --font-display: 'Chakra Petch', 'Source Code Pro', monospace;
   --radius: 4px;
@@ -465,7 +465,7 @@ select.ctrl-btn option {
   border-color: rgba(94, 196, 212, 0.3);
 }
 
-.kanban-column[data-status="next"] {
+.kanban-column[data-status="que"] {
   border-color: rgba(58, 102, 153, 0.3);
 }
 
@@ -542,7 +542,7 @@ select.ctrl-btn option {
   color: var(--text-secondary);
 }
 
-.kanban-column[data-status="next"] .col-icon {
+.kanban-column[data-status="que"] .col-icon {
   color: var(--accent);
 }
 
