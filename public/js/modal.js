@@ -261,6 +261,8 @@
 
   function attachNotesKeyHandlers(textarea) {
     textarea.addEventListener('keydown', (e) => {
+      // Skip while IME is composing (e.g. Japanese input confirmation Enter)
+      if (e.isComposing) return;
       if (e.key === 'Tab') {
         e.preventDefault();
         handleNotesTab(textarea, e.shiftKey);
